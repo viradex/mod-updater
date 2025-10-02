@@ -1,0 +1,23 @@
+{
+  "name": "mod-updater",
+  "version": "1.0.0",
+  "description": "Automatically downloads Minecraft mods for the specified update",
+  "homepage": "https://github.com/viradex/mod-updater#readme",
+  "bugs": {
+    "url": "https://github.com/viradex/mod-updater/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viradex/mod-updater.git"
+  },
+  "license": "MIT",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2"
+  }
+}
