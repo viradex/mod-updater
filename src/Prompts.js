@@ -24,11 +24,14 @@ class Prompts {
     return this.saveDir;
   }
 
-  promptModInfo() {
+  promptAllVersion() {
     this.allVersion = question("Enter the version number that all the mods should be: ");
-    this.modloader = question("Enter the modloader: ");
+    return this.allVersion;
+  }
 
-    return { allVersion: this.allVersion, modloader: this.modloader };
+  promptModloader() {
+    this.modloader = question("Enter the modloader: ").toLowerCase();
+    return this.modloader;
   }
 }
 
