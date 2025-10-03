@@ -1,7 +1,9 @@
-const chalk = require("chalk");
-const { question } = require("readline-sync");
-const fs = require("fs");
-const path = require("path");
+import chalk from "chalk";
+import fs from "fs";
+import path from "path";
+import { input, select } from "@inquirer/prompts";
+
+import Validation from "./Validation.js";
 
 class Prompts {
   constructor() {
@@ -10,12 +12,14 @@ class Prompts {
     this.modloader = "";
   }
 
-  promptSaveDir() {
-    this.saveDir = path.resolve(question(`Enter the folder name to download the mods to: `));
+  async promptSaveDir() {
+    const folderName = await input({ message: "Enter the folder name to download the mods to:" });
+
+    this.saveDir = path.resolve(folderName);
 
     try {
       if (!fs.existsSync(this.saveDir)) {
-        fs.mkdirSync(this.saveDir);
+        fs.mkdirSync(this.saveDir, { recursive: true });
       }
     } catch (e) {
       console.log(chalk.red(`ERROR: An unexpected error occurred! ${chalk.dim(e.message)}`));
@@ -24,15 +28,45 @@ class Prompts {
     return this.saveDir;
   }
 
-  promptAllVersion() {
-    this.allVersion = question("Enter the version number that all the mods should be: ");
+  async promptAllVersion() {
+    this.allVersion = await input({
+      message: "Enter the version number that all the mods should be:",
+      validate: (ver) => {
+        if (Validation.validateVersion(ver)) {
+          return true;
+        } else {
+          return "ERROR: The provided release version, pre-release or snapshot is invalid.";
+        }
+      },
+    });
     return this.allVersion;
   }
 
-  promptModloader() {
-    this.modloader = question("Enter the modloader: ").toLowerCase();
+  async promptModloader() {
+    this.modloader = await select({
+      message: "Select the modloader:",
+      choices: [
+        {
+          name: "Fabric",
+          value: "fabric",
+        },
+        {
+          name: "Forge",
+          value: "forge",
+        },
+        {
+          name: "NeoForge",
+          value: "neoforge",
+        },
+        {
+          name: "Quilt",
+          value: "quilt",
+        },
+      ],
+    });
+
     return this.modloader;
   }
 }
 
-module.exports = Prompts;
+export default Prompts;

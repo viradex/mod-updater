@@ -1,5 +1,5 @@
-const chalk = require("chalk");
-const fs = require("fs");
+import chalk from "chalk";
+import fs from "fs";
 
 class Config {
   constructor() {
@@ -19,4 +19,4 @@ class Config {
   }
 }
 
-module.exports = Config;
+export default Config;

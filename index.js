@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-const chalk = require("chalk");
+import chalk from "chalk";
+
 console.log(chalk.bold.underline("Minecraft Mod Updater"));
 console.log(chalk.dim("Loading, please wait...\n"));
 
@@ -10,37 +11,17 @@ const data = {
   modloader: "",
 };
 
-const Config = require("./src/Config");
+import Config from "./src/Config.js";
 const config = new Config();
 
-const Prompts = require("./src/Prompts");
+import Prompts from "./src/Prompts.js";
 const prompts = new Prompts();
 
-const Validation = require("./src/Validation");
-
 if (!config.configExists()) {
-  process.exit(1);
+  process.exit(1); // TODO add auto config maker, prompt user for values
 }
 
 console.log(chalk.bold.underline.blue("Initial Information"));
-data.saveDir = prompts.promptSaveDir();
-
-data.allVersion = prompts.promptAllVersion();
-while (!Validation.validateVersion(data.allVersion)) {
-  console.log(
-    chalk.red("ERROR: The provided release version, pre-release or snapshot was invalid.\n")
-  );
-
-  data.allVersion = prompts.promptAllVersion();
-}
-
-data.modloader = prompts.promptModloader();
-while (!Validation.validateModloader(data.modloader)) {
-  console.log(
-    chalk.red(
-      "ERROR: The provided modloader was invalid. Accepted values are 'fabric', 'forge', 'neoforge', or 'quilt'.\n"
-    )
-  );
-
-  data.modloader = prompts.promptModloader();
-}
+data.saveDir = await prompts.promptSaveDir();
+data.allVersion = await prompts.promptAllVersion();
+data.modloader = await prompts.promptModloader();
