@@ -1,7 +1,8 @@
 import chalk from "chalk";
 import fs from "fs";
 import axios from "axios";
-import { input, expand } from "@inquirer/prompts";
+import path from "path";
+import { input, confirm, expand } from "@inquirer/prompts";
 
 import pressAnyKey from "./helper/pressAnyKey.js";
 
@@ -10,22 +11,26 @@ class Config {
     this.filename = "config.json";
   }
 
-  configExists() {
+  configExists(showError = false) {
     if (!fs.existsSync(this.filename)) {
-      console.log(
-        chalk.red(
-          `ERROR: The required file '${this.filename}' does not exist in the current working directory. Please ensure the file exists and try again.\nIf you haven't yet made the file, refer to the documentation for how to make it.`
-        )
-      );
+      if (showError)
+        console.log(
+          chalk.red(
+            `ERROR: The required file '${this.filename}' does not exist in the current working directory. Please ensure the file exists and try again.\nIf you haven't yet made the file, refer to the documentation for how to make it.`
+          )
+        );
       return false;
     }
     return true;
   }
 
-  async createConfig() {
+  async createConfig(manuallySelected = true) {
     process.stdout.write("\x1bc");
     console.log(chalk.bold.underline.blue("Auto Config Maker"));
-    console.log("We detected that you don't have a config file yet, so let's make one!");
+
+    if (manuallySelected)
+      console.log("The config file will help the program to determine what mods to update!");
+    else console.log("We detected that you don't have a config file yet, so let's make one!");
     console.log(chalk.dim("Refer to the docs for help on where to get specific data.\n"));
 
     await pressAnyKey("Press any key to continue . . .", false);
@@ -119,6 +124,19 @@ class Config {
         `Config file '${this.filename}' successfully saved to current working directory!\n`
       )
     );
+  }
+
+  async deleteConfig() {
+    const confirmation = await confirm({
+      message: `Are you sure you want to delete the config file '${path.resolve(this.filename)}'?`,
+    });
+
+    if (confirmation) {
+      fs.rmSync(this.filename);
+      console.log(chalk.green("Successfully deleted."));
+    } else {
+      console.log(chalk.yellow("Left the config file as-is."));
+    }
   }
 }
 
