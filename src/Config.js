@@ -24,6 +24,11 @@ class Config {
     return true;
   }
 
+  getConfig() {
+    if (!this.configExists(false)) return [];
+    return JSON.parse(fs.readFileSync(this.filename, "utf-8"));
+  }
+
   async createConfig(manuallySelected = true) {
     process.stdout.write("\x1bc");
     console.log(chalk.bold.underline.blue("Auto Config Maker"));
@@ -103,7 +108,7 @@ class Config {
         modEntries.push({
           projectID,
           name,
-          filename,
+          filename: filename + ".jar",
         });
 
         if (answer === "save") {
@@ -118,7 +123,7 @@ class Config {
       }
     }
 
-    fs.writeFileSync(this.filename, JSON.stringify(modEntries));
+    fs.writeFileSync(this.filename, JSON.stringify(modEntries), "utf-8");
     console.log(
       chalk.green(
         `Config file '${this.filename}' successfully saved to current working directory!\n`

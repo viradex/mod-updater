@@ -5,7 +5,7 @@ import chalk from "chalk";
 console.log(chalk.bold.underline("Minecraft Mod Updater"));
 console.log(chalk.dim("Loading, please wait...\n"));
 
-const args = process.argv[2];
+const arg = process.argv[2];
 const data = {
   saveDir: "",
   allVersion: "",
@@ -18,17 +18,19 @@ const config = new Config();
 import Prompts from "./src/Prompts.js";
 const prompts = new Prompts();
 
+import downloader from "./src/downloader.js";
+
 if (!config.configExists(false)) {
   await config.createConfig(false);
 }
 
-if (args === "-create") {
+if (arg === "-create") {
   await config.createConfig(true);
   process.exit(0);
-} else if (args === "-update") {
+} else if (arg === "-update") {
   console.log("i think im supposed to do something");
   process.exit(0);
-} else if (args === "-delete") {
+} else if (arg === "-delete") {
   await config.deleteConfig();
   process.exit(0);
 }
@@ -37,3 +39,5 @@ console.log(chalk.bold.underline.blue("Initial Information"));
 data.saveDir = await prompts.promptSaveDir();
 data.allVersion = await prompts.promptAllVersion();
 data.modloader = await prompts.promptModloader();
+
+await downloader(data.saveDir, data.allVersion, data.modloader);
