@@ -13,7 +13,10 @@ class Prompts {
   }
 
   async promptSaveDir() {
-    const folderName = await input({ message: "Enter the folder name to download the mods to:" });
+    const folderName = await input({
+      message: "Enter the folder name to download the mods to:",
+      required: true,
+    });
 
     this.saveDir = path.resolve(folderName);
 
@@ -23,6 +26,7 @@ class Prompts {
       }
     } catch (e) {
       console.log(chalk.red(`ERROR: An unexpected error occurred! ${chalk.dim(e.message)}`));
+      process.exit(1);
     }
 
     return this.saveDir;
@@ -31,6 +35,7 @@ class Prompts {
   async promptAllVersion() {
     this.allVersion = await input({
       message: "Enter the version number that all the mods should be:",
+      required: true,
       validate: (ver) => {
         if (Validation.validateVersion(ver)) {
           return true;
