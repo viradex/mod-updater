@@ -25,14 +25,15 @@ class Config {
   async createConfig() {
     process.stdout.write("\x1bc");
     console.log(chalk.bold.underline.blue("Auto Config Maker"));
-    console.log("This program will automatically create the configuration for the mod updater.");
-    console.log(chalk.dim("Refer to the documentation for help on where to get specific data.\n"));
+    console.log("We detected that you don't have a config file yet, so let's make one!");
+    console.log(chalk.dim("Refer to the docs for help on where to get specific data.\n"));
 
     await pressAnyKey("Press any key to continue . . .", false);
 
-    let continueAdding = true;
-    while (continueAdding) {
+    let modEntries = [];
+    while (true) {
       process.stdout.write("\x1bc");
+      console.log(chalk.bold.underline.blue("Auto Config Maker\n"));
 
       const name = await input({
         message: chalk.bold("Enter mod name (as in the URL):"),
@@ -77,26 +78,47 @@ class Config {
           },
           {
             key: "n",
-            name: "Discard only this mod",
+            name: "Discard only this mod entry",
             value: "discard",
           },
           {
+            key: "s",
+            name: "Save config file",
+            value: "save",
+          },
+          {
             key: "x",
-            name: "Abort and discard all mods",
+            name: "Abort and discard all mod entries",
             value: "abort",
           },
         ],
       });
 
-      // TODO add actual functions
-      if (answer === "continue") {
-        continueAdding = true;
+      if (answer === "continue" || answer === "save") {
+        modEntries.push({
+          projectID,
+          name,
+          filename,
+        });
+
+        if (answer === "save") {
+          process.stdout.write("\x1bc");
+          break;
+        }
       } else if (answer === "discard") {
-        continueAdding = true;
-      } else {
-        continueAdding = false;
+        continue;
+      } else if (answer === "abort") {
+        process.stdout.write("\x1bc");
+        return;
       }
     }
+
+    fs.writeFileSync(this.filename, JSON.stringify(modEntries));
+    console.log(
+      chalk.green(
+        `Config file '${this.filename}' successfully saved to current working directory!\n`
+      )
+    );
   }
 }
 

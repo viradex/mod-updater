@@ -19,7 +19,6 @@ const prompts = new Prompts();
 
 if (!config.configExists()) {
   await config.createConfig();
-  process.exit(0); // TODO make it continue code after config made, this is for debug
 }
 
 console.log(chalk.bold.underline.blue("Initial Information"));
