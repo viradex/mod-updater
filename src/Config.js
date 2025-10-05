@@ -6,13 +6,52 @@ import { input, confirm, expand, checkbox } from "@inquirer/prompts";
 
 import pressAnyKey from "./helper/pressAnyKey.js";
 import sleep from "./helper/sleep.js";
+import sortNestedObjects from "./helper/sortNestedObjects.js";
 
 class Config {
   constructor() {
     this.filename = "config.json";
   }
 
-  async #addModEntry(useExistingConfig = false, showHeading = false) {
+  async #modInfoPrompts() {
+    const name = await input({
+      message: chalk.bold("Enter mod name (as in the URL):"),
+      transformer: (val) => val.toLowerCase(),
+      required: true,
+    });
+
+    let projectID = "";
+    try {
+      projectID = (await axios.get(`https://api.modrinth.com/v2/project/${name}/version`)).data[0]
+        .project_id;
+    } catch (e) {
+      console.log();
+      if (e.response && e.response.status === 404) {
+        console.log(chalk.red(`ERROR: The mod does not exist! Continuing...`));
+      } else {
+        console.log(
+          chalk.red(`ERROR: An unexpected error occurred! ${chalk.dim(e.message)}\nContinuing...`)
+        );
+      }
+
+      await sleep(2500);
+      return false;
+    }
+
+    const filename = await input({
+      message: "Enter the filename of the downloaded mod file (optional):",
+    });
+
+    console.log(
+      chalk.yellow(
+        `\nThis is the mod URL that will be saved, please ensure it is correct: https://modrinth.com/mod/${projectID}`
+      )
+    );
+
+    return { name, projectID, filename };
+  }
+
+  async #addModEntry(useExistingConfig, showHeading = false) {
     let modEntries = [];
     if (useExistingConfig) modEntries = JSON.parse(fs.readFileSync(this.filename, "utf-8"));
 
@@ -20,40 +59,9 @@ class Config {
       process.stdout.write("\x1bc");
       if (showHeading) console.log(chalk.bold.underline.blue("Auto Config Maker\n"));
 
-      const name = await input({
-        message: chalk.bold("Enter mod name (as in the URL):"),
-        transformer: (val) => val.toLowerCase(),
-        required: true,
-      });
-
-      let projectID = "";
-      try {
-        projectID = (await axios.get(`https://api.modrinth.com/v2/project/${name}/version`)).data[0]
-          .project_id;
-      } catch (e) {
-        console.log();
-        if (e.response && e.response.status === 404) {
-          console.log(chalk.red(`ERROR: The mod does not exist! Continuing...`));
-        } else {
-          console.log(
-            chalk.red(`ERROR: An unexpected error occurred! ${chalk.dim(e.message)}\nContinuing...`)
-          );
-        }
-
-        await sleep(2500);
-        continue;
-      }
-
-      const filename = await input({
-        message: "Enter the filename of the downloaded mod file (optional):",
-      });
-
-      console.log();
-      console.log(
-        chalk.yellow(
-          `This is the mod URL that will be saved, please ensure it is correct: https://modrinth.com/mod/${projectID}`
-        )
-      );
+      const modInfo = await this.#modInfoPrompts();
+      if (!modInfo) continue;
+      const { name, projectID, filename } = modInfo;
 
       const answer = await expand({
         message: "What would you like to do?",
@@ -198,13 +206,48 @@ class Config {
       await this.#addModEntry(true, false);
       return;
     } else if (action === "change") {
-      const selections = await this.#selectMods("What mods would you like to change?"); // unfinished TODO finish, use first two lines of del action
+      const selections = await this.#selectMods("What mods would you like to change?");
+      const fullConfig = this.getConfig();
+      const modifiedConfig = this.#removeMods(selections);
+
+      const removed = fullConfig.filter(
+        (fullItem) => !modifiedConfig.some((modItem) => modItem.projectID === fullItem.projectID)
+      );
+
+      const modEntries = [];
+      for (const mod of removed) {
+        process.stdout.write("\x1bc");
+        const prettyName = mod.filename
+          ? `${mod.filename.replace(/\.jar$/i, "")} (${mod.name})`
+          : mod.name;
+        console.log(chalk.underline.bold(`Editing ${prettyName}\n`));
+
+        const modInfo = await this.#modInfoPrompts();
+        if (!modInfo) continue;
+        const { name, projectID, filename } = modInfo;
+
+        const confirmation = await confirm({
+          message: "Are you sure you want to change this mod?",
+        });
+
+        if (confirmation) {
+          modEntries.push({
+            projectID,
+            name,
+            filename: filename ? filename + ".jar" : "",
+          });
+        }
+      }
+
+      const edited = sortNestedObjects([...modifiedConfig, ...modEntries]);
+      fs.writeFileSync(this.filename, JSON.stringify(edited), "utf-8");
+      console.log(chalk.green(`Successfully edited mods!\n`));
     } else if (action === "delete") {
       const selections = await this.#selectMods("What mods would you like to delete?");
       const modifiedConfig = this.#removeMods(selections);
 
       const confirmation = await confirm({
-        message: `Are you sure you want to delete the selected mods?`,
+        message: "Are you sure you want to delete the selected mods?",
       });
 
       if (confirmation) {
