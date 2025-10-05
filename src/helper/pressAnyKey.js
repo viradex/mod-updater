@@ -1,20 +1,17 @@
-import readline from "readline";
-
-const pressAnyKey = async (message, newline = false) => {
+export default async (message, newline = false) => {
   return new Promise((resolve) => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
+    if (!newline) {
+      process.stdout.write(message + " ");
+    } else {
+      console.log(message);
+    }
 
-    if (!newline) process.stdout.write(message + " ");
-    else console.log(message);
-
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
     process.stdin.once("data", () => {
-      rl.close();
+      process.stdin.setRawMode(false);
+      process.stdin.pause();
       resolve();
     });
   });
 };
-
-export default pressAnyKey;

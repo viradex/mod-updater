@@ -2,7 +2,7 @@ import chalk from "chalk";
 import fs from "fs";
 import axios from "axios";
 import path from "path";
-import { input, confirm, expand } from "@inquirer/prompts";
+import { input, confirm, expand, checkbox } from "@inquirer/prompts";
 
 import pressAnyKey from "./helper/pressAnyKey.js";
 import sleep from "./helper/sleep.js";
@@ -109,6 +109,31 @@ class Config {
     );
   }
 
+  async #selectMods(message) {
+    const config = this.getConfig();
+    const selections = config.map(({ projectID, name, filename }) => {
+      const cleanName = filename ? filename.replace(/\.jar$/i, "") : "";
+      return {
+        name: cleanName ? `${cleanName} (${name.toLowerCase()})` : name,
+        value: projectID,
+      };
+    });
+
+    const choices = await checkbox({
+      message,
+      required: true,
+      choices: selections,
+    });
+    return choices;
+  }
+
+  #removeMods(modsToRemove) {
+    const config = this.getConfig();
+    const updated = config.filter((obj) => !modsToRemove.includes(obj.projectID));
+
+    return updated;
+  }
+
   configExists(showError = false) {
     if (!fs.existsSync(this.filename)) {
       if (showError)
@@ -172,6 +197,22 @@ class Config {
     if (action === "add") {
       await this.#addModEntry(true, false);
       return;
+    } else if (action === "change") {
+      const selections = await this.#selectMods("What mods would you like to change?"); // unfinished TODO finish, use first two lines of del action
+    } else if (action === "delete") {
+      const selections = await this.#selectMods("What mods would you like to delete?");
+      const modifiedConfig = this.#removeMods(selections);
+
+      const confirmation = await confirm({
+        message: `Are you sure you want to delete the selected mods?`,
+      });
+
+      if (confirmation) {
+        fs.writeFileSync(this.filename, JSON.stringify(modifiedConfig), "utf-8");
+        console.log(chalk.green("Deleted the selected mods from the config file!"));
+      } else {
+        console.log(chalk.yellow("Left the config file as-is."));
+      }
     }
   }
 
