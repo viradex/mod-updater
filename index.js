@@ -28,7 +28,7 @@ if (arg === "-create") {
   await config.createConfig(true);
   process.exit(0);
 } else if (arg === "-update") {
-  console.log("i think im supposed to do something");
+  await config.updateConfig();
   process.exit(0);
 } else if (arg === "-delete") {
   await config.deleteConfig();

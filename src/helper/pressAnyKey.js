@@ -1,16 +1,17 @@
+import readline from "readline";
+
 const pressAnyKey = async (message, newline = false) => {
   return new Promise((resolve) => {
-    if (!newline) {
-      process.stdout.write(message + " ");
-    } else {
-      console.log(message);
-    }
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
 
-    process.stdin.setRawMode(true);
-    process.stdin.resume();
+    if (!newline) process.stdout.write(message + " ");
+    else console.log(message);
+
     process.stdin.once("data", () => {
-      process.stdin.setRawMode(false);
-      process.stdin.pause();
+      rl.close();
       resolve();
     });
   });
