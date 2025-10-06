@@ -21,7 +21,11 @@ const prompts = new Prompts();
 import downloader from "./src/downloader.js";
 
 try {
-  await config.configFileLocation();
+  if (!arg?.startsWith("-")) {
+    await config.configFileLocation(arg);
+  } else {
+    await config.configFileLocation();
+  }
 
   if (!config.configExists()) {
     await config.createConfig(false);

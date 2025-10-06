@@ -143,13 +143,15 @@ class Config {
     return updated;
   }
 
-  async configFileLocation() {
-    const fileLocation = await input({
-      message:
-        "Enter the location (including the name) of the config file, or where to create it if it doesn't exist:",
-      default: this.filename,
-      required: true,
-    });
+  async configFileLocation(fileLocation) {
+    if (!fileLocation) {
+      fileLocation = await input({
+        message:
+          "Enter the location (including the name) of the config file, or where to create it if it doesn't exist:",
+        default: this.filename,
+        required: true,
+      });
+    }
 
     this.filename = fileLocation;
   }
