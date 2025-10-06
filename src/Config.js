@@ -161,7 +161,6 @@ class Config {
   }
 
   getConfig() {
-    console.log(this.filename);
     if (!fs.existsSync(this.filename)) return [];
     return JSON.parse(fs.readFileSync(this.filename, "utf-8"));
   }
