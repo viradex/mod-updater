@@ -11,7 +11,7 @@ import sortNestedObjects from "./helper/sortNestedObjects.js";
 
 class Config {
   constructor() {
-    this.filename = path.resolve(os.homedir(), "mcmod-config.json");
+    this.filename = path.resolve(os.homedir(), "mcmods-config.json");
   }
 
   async #modInfoPrompts() {
@@ -115,11 +115,7 @@ class Config {
     modEntries = sortNestedObjects(modEntries);
 
     fs.writeFileSync(this.filename, JSON.stringify(modEntries), "utf-8");
-    console.log(
-      chalk.green(
-        `Config file '${this.filename}' successfully saved to current working directory!\n`
-      )
-    );
+    console.log(chalk.green(`Config file '${this.filename}' successfully saved!\n`));
   }
 
   async #selectMods(message) {
