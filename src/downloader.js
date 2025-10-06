@@ -2,15 +2,14 @@ import chalk from "chalk";
 import path from "path";
 import axios from "axios";
 
-import Config from "./Config.js";
 import downloadFile from "./helper/downloadFile.js";
 
-const downloader = async (folder, version, modloader) => {
-  process.stdout.write("\x1bc");
+const downloader = async (folder, version, modloader, configClass) => {
+  // process.stdout.write("\x1bc");
   folder = path.resolve(folder);
 
-  const config = new Config().getConfig();
-  if (!config) {
+  const config = configClass.getConfig();
+  if (!config.length) {
     console.log(chalk.red("ERROR: Unable to find config file."));
     process.exit(1);
   }
@@ -47,7 +46,6 @@ const downloader = async (folder, version, modloader) => {
     }
   } catch (e) {
     console.log(chalk.red(`ERROR: An unexpected error occurred! ${chalk.dim(e.message)}`));
-    await pressAnyKey("Press any key to continue . . .", false);
     process.exit(1);
   }
 };

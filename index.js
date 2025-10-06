@@ -21,6 +21,8 @@ const prompts = new Prompts();
 import downloader from "./src/downloader.js";
 
 try {
+  await config.configFileLocation();
+
   if (!config.configExists()) {
     await config.createConfig(false);
   }
@@ -36,12 +38,12 @@ try {
     process.exit(0);
   }
 
-  console.log(chalk.bold.underline.blue("Initial Information"));
+  console.log(chalk.bold.underline.blue("\nInitial Information"));
   data.saveDir = await prompts.promptSaveDir();
   data.allVersion = await prompts.promptAllVersion();
   data.modloader = await prompts.promptModloader();
 
-  await downloader(data.saveDir, data.allVersion, data.modloader);
+  await downloader(data.saveDir, data.allVersion, data.modloader, config);
 } catch (e) {
   if (e.name === "ExitPromptError") {
     console.log("\nExiting prematurely...");

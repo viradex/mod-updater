@@ -143,6 +143,17 @@ class Config {
     return updated;
   }
 
+  async configFileLocation() {
+    const fileLocation = await input({
+      message:
+        "Enter the location (including the name) of the config file, or where to create it if it doesn't exist:",
+      default: this.filename,
+      required: true,
+    });
+
+    this.filename = fileLocation;
+  }
+
   configExists() {
     if (!fs.existsSync(this.filename)) return false;
     if (!this.getConfig().length) return false;
@@ -150,6 +161,7 @@ class Config {
   }
 
   getConfig() {
+    console.log(this.filename);
     if (!fs.existsSync(this.filename)) return [];
     return JSON.parse(fs.readFileSync(this.filename, "utf-8"));
   }
