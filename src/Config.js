@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import fs from "fs";
+import os from "os";
 import axios from "axios";
 import path from "path";
 import { input, confirm, expand, checkbox } from "@inquirer/prompts";
@@ -10,15 +11,17 @@ import sortNestedObjects from "./helper/sortNestedObjects.js";
 
 class Config {
   constructor() {
-    this.filename = "config.json";
+    this.filename = path.resolve(os.homedir(), "mcmod-config.json");
   }
 
   async #modInfoPrompts() {
-    const name = await input({
-      message: chalk.bold("Enter mod name (as in the URL):"),
-      transformer: (val) => val.toLowerCase(),
-      required: true,
-    });
+    const name = (
+      await input({
+        message: chalk.bold("Enter mod name (as in the URL):"),
+        transformer: (val) => val.toLowerCase(),
+        required: true,
+      })
+    ).toLowerCase();
 
     let projectID = "";
     try {
@@ -109,6 +112,8 @@ class Config {
       }
     }
 
+    modEntries = sortNestedObjects(modEntries);
+
     fs.writeFileSync(this.filename, JSON.stringify(modEntries), "utf-8");
     console.log(
       chalk.green(
@@ -142,21 +147,14 @@ class Config {
     return updated;
   }
 
-  configExists(showError = false) {
-    if (!fs.existsSync(this.filename)) {
-      if (showError)
-        console.log(
-          chalk.red(
-            `ERROR: The required file '${this.filename}' does not exist in the current working directory. Please ensure the file exists and try again.\nIf you haven't yet made the file, refer to the documentation for how to make it.`
-          )
-        );
-      return false;
-    }
+  configExists() {
+    if (!fs.existsSync(this.filename)) return false;
+    if (!this.getConfig().length) return false;
     return true;
   }
 
   getConfig() {
-    if (!this.configExists(false)) return [];
+    if (!fs.existsSync(this.filename)) return [];
     return JSON.parse(fs.readFileSync(this.filename, "utf-8"));
   }
 

@@ -20,24 +20,34 @@ const prompts = new Prompts();
 
 import downloader from "./src/downloader.js";
 
-if (!config.configExists(false)) {
-  await config.createConfig(false);
+try {
+  if (!config.configExists()) {
+    await config.createConfig(false);
+  }
+
+  if (arg === "-create") {
+    await config.createConfig(true);
+    process.exit(0);
+  } else if (arg === "-update") {
+    await config.updateConfig();
+    process.exit(0);
+  } else if (arg === "-delete") {
+    await config.deleteConfig();
+    process.exit(0);
+  }
+
+  console.log(chalk.bold.underline.blue("Initial Information"));
+  data.saveDir = await prompts.promptSaveDir();
+  data.allVersion = await prompts.promptAllVersion();
+  data.modloader = await prompts.promptModloader();
+
+  await downloader(data.saveDir, data.allVersion, data.modloader);
+} catch (e) {
+  if (e.name === "ExitPromptError") {
+    console.log("\nExiting prematurely...");
+  } else {
+    console.log(chalk.red(`ERROR: Uncaught exception: ${e.message}`));
+  }
+
+  process.exit(1);
 }
-
-if (arg === "-create") {
-  await config.createConfig(true);
-  process.exit(0);
-} else if (arg === "-update") {
-  await config.updateConfig();
-  process.exit(0);
-} else if (arg === "-delete") {
-  await config.deleteConfig();
-  process.exit(0);
-}
-
-console.log(chalk.bold.underline.blue("Initial Information"));
-data.saveDir = await prompts.promptSaveDir();
-data.allVersion = await prompts.promptAllVersion();
-data.modloader = await prompts.promptModloader();
-
-await downloader(data.saveDir, data.allVersion, data.modloader);

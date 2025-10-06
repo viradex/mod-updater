@@ -17,6 +17,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "mcmods": "./index.js"
+  },
   "dependencies": {
     "@inquirer/prompts": "^7.8.6",
     "axios": "^1.12.2",
