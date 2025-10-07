@@ -54,14 +54,11 @@ class Config {
     return { name, projectID, filename };
   }
 
-  async #addModEntry(useExistingConfig, showHeading = false) {
+  async #addModEntry(useExistingConfig) {
     let modEntries = [];
     if (useExistingConfig) modEntries = JSON.parse(fs.readFileSync(this.filename, "utf-8"));
 
     while (true) {
-      process.stdout.write("\x1bc");
-      if (showHeading) console.log(chalk.bold.underline.blue("Auto Config Maker\n"));
-
       const modInfo = await this.#modInfoPrompts();
       if (!modInfo) continue;
       const { name, projectID, filename } = modInfo;
@@ -101,13 +98,11 @@ class Config {
         });
 
         if (answer === "save") {
-          process.stdout.write("\x1bc");
           break;
         }
       } else if (answer === "discard") {
         continue;
       } else if (answer === "abort") {
-        process.stdout.write("\x1bc");
         return;
       }
     }
@@ -168,7 +163,6 @@ class Config {
   }
 
   async createConfig(manuallySelected = true) {
-    process.stdout.write("\x1bc");
     console.log(chalk.bold.underline.blue("Auto Config Maker"));
 
     if (manuallySelected)
@@ -178,7 +172,7 @@ class Config {
 
     await pressAnyKey("Press any key to continue . . .", false);
 
-    await this.#addModEntry(false, true);
+    await this.#addModEntry(false);
   }
 
   async updateConfig() {
@@ -210,7 +204,7 @@ class Config {
     });
 
     if (action === "add") {
-      await this.#addModEntry(true, false);
+      await this.#addModEntry(true);
       return;
     } else if (action === "change") {
       const selections = await this.#selectMods("What mods would you like to change?");
@@ -223,7 +217,6 @@ class Config {
 
       const modEntries = [];
       for (const mod of removed) {
-        process.stdout.write("\x1bc");
         const prettyName = mod.filename
           ? `${mod.filename.replace(/\.jar$/i, "")} (${mod.name})`
           : mod.name;

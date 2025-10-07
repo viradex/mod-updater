@@ -5,7 +5,6 @@ import axios from "axios";
 import downloadFile from "./helper/downloadFile.js";
 
 const downloader = async (folder, version, modloader, configClass) => {
-  // process.stdout.write("\x1bc");
   folder = path.resolve(folder);
 
   const config = configClass.getConfig();
